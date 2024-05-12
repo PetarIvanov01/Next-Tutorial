@@ -1,14 +1,46 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+const QUERY = 'search';
 
 export default function Search({ placeholder }: { placeholder: string }) {
+  const [paramsState, setState] = useState(new URLSearchParams());
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      replace(`${pathname}?${paramsState.toString()}`);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [replace, paramsState, pathname]);
+
+  const handleSearch = (term: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', '1');
+    if (term) {
+      params.set(QUERY, term);
+    } else {
+      params.delete(QUERY);
+    }
+    setState(params);
+  };
   return (
     <div className="relative flex flex-1 flex-shrink-0">
       <label htmlFor="search" className="sr-only">
         Search
       </label>
       <input
+        onChange={(e) => {
+          handleSearch(e.target.value);
+        }}
+        defaultValue={searchParams.get(QUERY)?.toString()}
         className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
         placeholder={placeholder}
       />
